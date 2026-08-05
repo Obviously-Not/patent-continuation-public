@@ -8,10 +8,16 @@ This file is the **only** source of release notes: the release pipeline
 deliberately does not generate them from commit history, because the source
 repository is private and its commit subjects are not published.
 
-## [Unreleased]
+## [0.1.0] - 2026-08-05
 
-No release has been cut yet. The pipeline that will cut one landed 2026-08-05;
-what follows is the state it will publish from.
+**First release.** The binary is published to
+[`patent-continuation-public`](https://github.com/Obviously-Not/patent-continuation-public);
+the source stays private. All inference runs locally by default, so nothing
+leaves your machine unless you point the tool at a remote endpoint yourself.
+
+A `0.x` version on purpose. This is R&D-grade drafting input for a licensed
+practitioner, not a finished product, and the limitations below are the reason
+rather than boilerplate. Read them before using output for anything real.
 
 ### Added
 
