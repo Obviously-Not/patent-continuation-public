@@ -53,7 +53,7 @@ UI surfaces it as an error rather than fabricating a result. Use a stronger mode
 > large specs draft on a 1M-context model; they are refused only on a model too
 > small to hold them, and refused in tokens against that model's window. The
 > fixed 160k value survives ONLY as the fallback when a window cannot be
-> detected. See [`plans/2026-07-20-model-aware-context-window.md`](plans/2026-07-20-model-aware-context-window.md).
+> detected.
 > The table below documents the OLD behavior for reference. Large specs were
 > subsequently confirmed to draft at the same quality as small ones (no
 > lost-in-the-middle collapse); see the findings doc.
@@ -210,6 +210,4 @@ aim run-to-run). So the local-vs-remote choice is not only privacy-for-speed, it
 is privacy-for-strategic-reach: a local draft can be perfectly supported and
 still strategically flat. For strategy-sensitive drafting on material that may be
 sent remotely, prefer a frontier model; keep the local path for anything
-privileged and treat its aim as a first pass a practitioner sharpens. Evidence
-and the public falsification test: finding 8 in
-[`findings/2026-07-20-insights.md`](findings/2026-07-20-insights.md).
+privileged and treat its aim as a first pass a practitioner sharpens.

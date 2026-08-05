@@ -1,5 +1,12 @@
 # patent-continuation
 
+> **This is a distribution repository.** It carries the documentation and the
+> released binaries. The source lives in a private repository and is not
+> published here, so there is nothing to build or send a pull request against:
+> every file here is generated from the source repo on each release and is
+> overwritten by the next one. Bug reports and feature requests are welcome in
+> this repo's issue tracker.
+
 > Continuation-claim **drafting** pipeline for licensed patent practitioners,
 > shipped as a **Go binary**. A specification plus a set of filed (parent) claims
 > goes in; drafted continuation claims come out, refined by a cross-family critic.
@@ -214,12 +221,7 @@ Remote models via OpenRouter work too (`--model anthropic/claude-opus-4-8` with
 `OPENROUTER_API_KEY` set), but the spec then leaves your machine. Use a local
 model for anything unpublished or privileged. Note the local path costs more than
 speed: on real specs, local models draft well-grounded but strategically flatter
-claims than frontier models, so treat a local draft's claim aim as a first pass
-(finding 8 in [`docs/findings/2026-07-20-insights.md`](docs/findings/2026-07-20-insights.md)).
-
-For what a day of live runs established about drafter quality across models, read
-[`docs/findings/2026-07-20-insights.md`](docs/findings/2026-07-20-insights.md)
-and the [drafter comparison](docs/findings/2026-07-20-drafter-comparison.md).
+claims than frontier models, so treat a local draft's claim aim as a first pass.
 
 ## Honest maturity
 
