@@ -26,6 +26,10 @@ In scope:
 - Vulnerabilities in the local web UI's server: request handling that reaches
   files outside the working set, or that lets another local user or a web page
   in the operator's browser drive the tool
+- Flaws in licence renewal: a renewal response that can replace a valid token with one the
+  client should have rejected, a payload that carries more than the licence key, or any way to
+  make the client fail closed (stop working) when the endpoint is unreachable, which it must
+  never do.
 - Flaws in offline license verification, such as accepting a token that was not
   signed by the embedded key, or verifying with an attacker-supplied key
 - Path traversal or symlink escape when reading spec and claim files

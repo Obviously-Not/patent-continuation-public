@@ -19,12 +19,18 @@
 
 A Go binary. A specification plus the parent claims go in; drafted continuation
 claims come out. All inference is local by default (Ollama), or through any
-OpenAI-compatible endpoint with your own key. Nothing is sent anywhere you do
-not configure, and there is no server.
+OpenAI-compatible endpoint with your own key. Your specification is sent only to the
+model provider you configure, and there is no server of ours in that path.
+
+One exception, stated because it is the only one: if you activate a paid licence, the binary
+renews that licence over the network. It sends the licence key and nothing else, roughly once
+a month, on launch, when the licence is close to expiring. It carries no specification text, no
+matter identifiers and no usage data, and `CD_NO_LICENSE_RENEWAL=1` switches it off entirely.
+Without a paid licence the binary makes no such call at all.
 
 | Piece | Role |
 |---|---|
-| `go/main.go` | CLI: `draft`, `critique`, `judge`, `panel`, `serve`, `models`, `version`, `license`, `activate`, `upgrade` |
+| `go/main.go` | CLI: `draft`, `export`, `critique`, `judge`, `panel`, `serve`, `models`, `version`, `license`, `activate`, `upgrade` |
 | `go/internal/server/` | HTTP server for the local web UI (runs on localhost:9473) |
 | `go/web/` | Alpine.js SPA served by the binary (no build step). HTML/CSS are embedded via go:embed; Alpine itself loads from a pinned CDN with a subresource-integrity hash, so the web UI needs network access on first load and is not air-gapped |
 | `go/internal/pipeline/draft.go` | Spec analysis, target extraction, drafting, and the verify->revise loop |
@@ -38,11 +44,15 @@ not configure, and there is no server.
 
 You need the binary (download it from the latest release, or see below to build
 it), and **at least one inference backend**:
-local **Ollama** (private: nothing leaves your machine) or a remote **OpenRouter**
+local **Ollama** (private: your specification never leaves your machine) or a remote **OpenRouter**
 key (faster and stronger, but the spec is sent to a third party). You can set up
-both and choose per run with `--model`. Keys are read from the environment only,
-never from a flag and never from a `.env` file the binary loads for you, so you
-must `export` them in your shell (CP3).
+both and choose per run with `--model`. Your OpenRouter key is read from the
+environment first, and otherwise from `~/.continuation-drafter/config.json`, a
+file the binary creates mode 0600 (owner read/write only). It is never read from
+a command-line flag, never written to a log, and never stored in this repository.
+The web UI can save a key into that file for you; the CLI does not, so if you use
+the CLI only, `export OPENROUTER_API_KEY` in your shell. The binary does not read
+a `.env` file.
 
 ### Option A: local models with Ollama (private)
 
@@ -102,11 +112,20 @@ chmod +x continuation-drafter-darwin-arm64
 mv continuation-drafter-darwin-arm64 continuation-drafter
 ```
 
+**First, see it work with no files of your own.** The walkthrough specification the
+published lessons use is built into the binary, so this runs from any directory and
+never counts against any allowance:
+
+```bash
+./continuation-drafter models      # what this machine can run, and which model fits
+DRAFT_MODEL=<model> ./continuation-drafter draft --demo
+```
+
 **Draft** (the main command). A spec plus the parent claims in, drafted
 continuation claims out on stdout; live progress prints to stderr:
 
 ```bash
-# Local model (nothing leaves your machine)
+# Local model (your specification never leaves your machine)
 DRAFT_MODEL=qwen3:32b ./continuation-drafter draft \
   --spec ../fixtures/micro/micro_spec.txt \
   --parent ../fixtures/micro/micro_parent_claims.txt
@@ -124,6 +143,29 @@ fixes), independent of the drafting loop:
 ./continuation-drafter critique --spec spec.txt --parent parent.txt \
   --draft claims.txt --model anthropic/claude-sonnet-5 --json
 ```
+
+**Export to Word.** Claims are text, and the work continues in a word processor.
+`export` writes a `.docx` you can open in Word, Pages or LibreOffice, either from a
+claims file or straight off a `draft --json` run:
+
+```bash
+./continuation-drafter export --draft claims.txt --out claims.docx
+
+DRAFT_MODEL=qwen3:32b ./continuation-drafter draft \
+  --spec spec.txt --parent parent.txt --json \
+  | ./continuation-drafter export --from-json - --out claims.docx
+```
+
+LaTeX is also supported, for drafters who keep matter documents that way. The
+format follows the `--out` extension, so `--out claims.tex` writes LaTeX; state
+`--format` explicitly to override it.
+
+Claim numbering is preserved exactly as drafted, never renumbered, because a
+continuation's claims are commonly numbered on from the parent. The document is
+written user-only (mode 0600) since it holds client claim language, it refuses to
+overwrite an existing file unless you pass `--force`, and it carries the maturity
+notice inside the document, because an exported file gets read by people who never
+saw the terminal that made it.
 
 **Other commands:** `judge` scores one draft against the rubric, returning
 per-claim verdicts with spec-anchor validation (T1) and honest-null: a claim it
@@ -159,12 +201,18 @@ LLM provider you configure. One honest caveat: the web UI loads the Alpine.js li
 from a pinned CDN (with an integrity hash) when the page opens, so the browser makes one
 request to that CDN on load. That request carries no spec or claim data, but it does mean
 the **web UI needs network access on first load and is not fully air-gapped**. The CLI has
-no such dependency and runs fully offline (with a local Ollama model).
+no such dependency. With a local model and no paid licence it runs fully offline; with a paid
+licence it additionally makes the monthly licence-renewal call described under Setup, which
+`CD_NO_LICENSE_RENEWAL=1` disables. An air-gapped firm should run with that variable set and a
+long-dated token issued out of band.
 
 ## License keys
 
 Keys are Ed25519-signed, offline-verified, and stored locally in
-`~/.continuation-drafter/config.json`. Multiple keys can be activated; each key's tier is
+`~/.continuation-drafter/config.json`. Verification stays offline: the signature is checked
+against a public key compiled into the binary, with no network involved. What is networked is
+ACQUISITION, not verification, and only for a subscription: the binary fetches a replacement
+token when the current one nears expiry, so you run `activate` once rather than every month. Multiple keys can be activated; each key's tier is
 verified and reported. **As of 2026-07-21 the tier is reported but does not yet gate any
 feature: the free/paid paywall is deferred, so all features are available today.**
 
@@ -201,9 +249,11 @@ becomes load-bearing only in release builds with an embedded public key.
   completion cap. `--timeout` (default 30m for `draft`) and
   `CD_REQUEST_TIMEOUT_SECONDS` (per-request) bound long runs; large specs on slow
   models need both raised.
-- Keys come from the environment only, never a flag. The binary reads exactly
+- Keys come from the environment first, then from `~/.continuation-drafter/config.json`
+  (mode 0600), never from a flag and never from a log. The binary reads exactly
   one key, `OPENROUTER_API_KEY`; all remote inference goes through OpenRouter, so
-  no per-vendor key is used (CP3).
+  no per-vendor key is used. The environment always wins, so exporting the
+  variable overrides whatever is saved in the file.
 - `--json` emits a structured envelope on stdout instead of plain text.
 
 **Model choice matters more than it looks, and context is the first filter.**

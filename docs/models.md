@@ -126,6 +126,54 @@ model regardless of how well it drafts.
 This produces an awkward result worth stating plainly: `qwen3:32b` drafted the
 best claims in the screen and **cannot be used on a full-length specification**.
 
+## Measured against a real corpus (2026-07-30)
+
+The screen above uses a 3.7 KB fixture. Ten real parent/continuation pairs were
+then run end to end, specifications from 47 KB to 645 KB (median 154 KB, roughly
+12k to 165k tokens). Two results matter more than any ranking.
+
+**Coverage, not claim counts, is what separates local models.** Of the models
+available locally, these drafted all ten specifications including the 645 KB one:
+
+| model | drafted | resident memory | note |
+|---|---|---|---|
+| `gemma4:26b` | 10/10 | **20 GB, flat** | A4B mixture-of-experts |
+| `gemma4:31b` | 9/10 | **30 GB, flat** | fails only the 645 KB spec |
+| `qwen3-coder:30b` | 10/10 | 44 GB at 65k, **122 GB at 262k** | grows steeply with context |
+| `gemma4:12b` | 9/10 | 12 GB, flat | uneven quality across specs |
+| `devstral-small-2:24b` | 7/10 | 20 GB to **187 GB** | steep growth |
+| `deepseek-r1:70b` | 6/10 | 111 GB at 65k | returns prose, not JSON, on several |
+
+**Model file size does not predict memory in use.** `qwen3-coder:30b` is an 18 GB
+download that occupies 122 GB once given a context window large enough for the
+largest specifications. `deepseek-r1:70b` is a 42 GB download that occupies 111 GB.
+The ratio ranges from about 1x to 6x and cannot be estimated from the download.
+
+**Some architectures make long context nearly free, and that decides what fits.**
+Both Gemma 4 variants hold a 645 KB specification in essentially the same memory as
+a 47 KB one, because their attention design keeps the key-value cache almost
+constant. Qwen3-Coder climbs 21 GB to 122 GB across the same range, and Devstral
+20 GB to 187 GB. This is why a 31B model can fit a workstation while a 24B one does
+not, and it is the single most useful thing to check before choosing a model for
+long specifications.
+
+## If a specification is refused, check `--max-tokens` before changing model
+
+`--max-tokens` does two things: it caps the completion, and it reserves that much
+of the context window. The reservation is what usually bites.
+
+Measured across 127 drafts: the largest output was about 3,217 tokens against the
+default 16,000 cap, the median about 1,292, and **no run was ever truncated**. The
+cap never binds on output. It binds only by reserving context that nothing uses.
+
+Consequence: several models that refused the 645 KB specification at the default
+drafted it fine at `--max-tokens 8000`, which raises the usable spec ceiling by
+roughly 8,000 tokens. They had missed by a few hundred. Before concluding a
+specification is too large for a model, halve the completion budget and retry.
+
+This does not rescue a model whose window is genuinely too small. A 131k-token
+window cannot hold a 165k-token specification at any output budget.
+
 ## What the screen actually established
 
 **Coder-tuned models draft fine.** An earlier experiment found `codestral:22b`
@@ -200,7 +248,10 @@ target-extraction step.
 and reaches a third party. For published patents that is fine. For an
 unpublished or privileged application it is not: use a local model. The
 "nothing leaves your machine" property belongs to the local path only, and is
-not a property of the tool as a whole.
+not a property of the tool as a whole. Two things can leave, and they are different in kind:
+your SPECIFICATION, only ever to a model provider you configure, and, if you hold a paid
+licence, your LICENCE KEY to the renewal endpoint about once a month. The second carries no
+specification text and is disabled by `CD_NO_LICENSE_RENEWAL=1`.
 
 **The local path costs more than speed and context.** On a real spec, the strong
 local models drafted well-grounded, cleanly-formed claims that were aimed at the
