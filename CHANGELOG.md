@@ -12,6 +12,16 @@ repository is private and its commit subjects are not published.
 
 Nothing yet.
 
+## [0.1.7] - 2026-08-21
+
+### Fixed
+
+- **The browser tab icon is the current logo again.** The local interface shipped an
+  earlier mark on an opaque white plate while the website carried the not-equal mark, so
+  the tool you ran looked like a different product from the one that described it, in the
+  tab you leave open for a whole drafting session. It is now the same mark, transparent,
+  and 1 KB instead of 70 KB.
+
 ## [0.1.6] - 2026-08-21
 
 ### Added
