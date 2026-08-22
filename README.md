@@ -112,6 +112,18 @@ chmod +x continuation-drafter-darwin-arm64
 mv continuation-drafter-darwin-arm64 continuation-drafter
 ```
 
+On macOS, a binary downloaded through a browser carries a quarantine attribute, and
+these builds are not signed by an identified developer, so the first run is stopped
+with no message at all. Clear the attribute before running it:
+
+```bash
+xattr -d com.apple.quarantine continuation-drafter
+```
+
+That records that you accept the file. What establishes that the file is the one
+published is its SHA-256, listed in `checksums.txt` with each release. Linux and
+Windows need neither step.
+
 **First, see it work with no files of your own.** The walkthrough specification the
 published lessons use is built into the binary, so this runs from any directory and
 never counts against any allowance:
@@ -219,12 +231,13 @@ feature: the free/paid paywall is deferred, so all features are available today.
 ```bash
 ./continuation-drafter license             # show license status and capabilities
 ./continuation-drafter activate --key <your-key>   # activate a key
-./continuation-drafter upgrade             # open the purchase page in your browser
+./continuation-drafter upgrade             # report what this build can be upgraded to
 ```
 
-**Note:** There is currently no production public key embedded in dev builds, so
-license verification is skipped. The license system is implemented and tested but
-becomes load-bearing only in release builds with an embedded public key.
+**Note:** release builds embed the licence verification public key (since v0.1.1);
+dev builds do not, and skip verification. **In neither case is any feature gated:**
+nothing is currently sold, `upgrade` says so rather than opening a payment page, and a
+key verifies and reports a tier without changing what the tool will do.
 
 ### The knobs that matter
 
@@ -283,9 +296,14 @@ read. Treat output as drafting *input* for a practitioner, never as filing-ready
 and never as a legal determination.
 
 The licensing system's **verification and reporting are implemented; feature gating is
-deferred**. There is no production public key embedded, so all features are available in
-current builds. Even once a production key is embedded, keys will verify and report a tier
-but will not gate any feature until the paywall is built (deferred by owner decision, R3).
+deferred**. All features are available in every build, including release builds.
+
+**The reason changed with v0.1.1 and the distinction is worth stating plainly**, because
+the conclusion is the same and the mechanism is not. Until then, release builds carried no
+public key, and a build with no key treats every feature as available. Release builds now
+embed the key. What keeps every feature available is no longer the missing key: it is that
+**no feature is gated on a capability**, and that the free allowance is undecided rather
+than set. A key verifies and reports a tier; it does not change what the tool will do.
 
 ## License
 

@@ -10,6 +10,39 @@ repository is private and its commit subjects are not published.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.1.3] - 2026-08-21
+
+### Added
+
+- **The macOS binary is now signed and notarized by Apple.** Downloading it no longer
+  produces the "Apple could not verify" dialog, whose default button is *Move to
+  Trash*. Nothing has to be done to the file after downloading: no `chmod`, no
+  clearing of the quarantine flag, no Terminal at all if you do not want one.
+- **Running `continuation-drafter` with no arguments opens the drafting interface in
+  your browser.** Drafting, per-claim critique, scoring and the multi-model panel are
+  all there, and the models it offers are the ones already installed on your machine.
+  The command line is unchanged and `--help` still lists every command; a bare
+  invocation from a script or CI still prints usage and exits rather than starting a
+  server.
+
+### Changed
+
+- **`models` now recommends a model you already have.** It reported the installed
+  count and then suggested downloading something else, which on a machine with a
+  full Ollama library meant being told to fetch tens of gigabytes for no reason.
+- **The command list is grouped**, with the interface, model check and drafting under
+  "Start here" instead of twelve commands in alphabetical order.
+
+### Fixed
+
+- A next-step loop, and duplicate steps, in the guidance printed after a command.
+- `upgrade` advertised a purchase in its help text while correctly refusing to make
+  one, since there is nothing to buy.
+
+## [0.1.1] - 2026-08-18
+
 ### Security
 
 - **The local web UI now refuses cross-origin and non-loopback requests.** Any web
