@@ -12,6 +12,15 @@ repository is private and its commit subjects are not published.
 
 Nothing yet.
 
+## [0.1.6] - 2026-08-21
+
+### Added
+
+- **The macOS app has an icon.** The ObviouslyNot not-equal mark, in the brand gradient,
+  on a rounded plate. It shipped in 0.1.5 with the generic application icon, which on the
+  artifact whose whole job is to look trustworthy at first contact is the first thing a
+  practitioner sees.
+
 ## [0.1.5] - 2026-08-21
 
 ### Added
