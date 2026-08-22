@@ -112,17 +112,14 @@ chmod +x continuation-drafter-darwin-arm64
 mv continuation-drafter-darwin-arm64 continuation-drafter
 ```
 
-On macOS, a binary downloaded through a browser carries a quarantine attribute, and
-these builds are not signed by an identified developer, so the first run is stopped
-with no message at all. Clear the attribute before running it:
+The macOS builds are signed with a Developer ID certificate and notarized by Apple as
+of v0.1.4, so there is nothing else to do: no Gatekeeper dialog, and no quarantine
+attribute to clear. Releases up to and including v0.1.3 were unsigned and needed
+`xattr -d com.apple.quarantine`; that step is no longer required and should not be
+copied from an older page.
 
-```bash
-xattr -d com.apple.quarantine continuation-drafter
-```
-
-That records that you accept the file. What establishes that the file is the one
-published is its SHA-256, listed in `checksums.txt` with each release. Linux and
-Windows need neither step.
+What establishes that the file is the one published is its SHA-256, listed in
+`checksums.txt` with each release.
 
 **First, see it work with no files of your own.** The walkthrough specification the
 published lessons use is built into the binary, so this runs from any directory and
