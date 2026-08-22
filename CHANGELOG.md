@@ -12,7 +12,7 @@ repository is private and its commit subjects are not published.
 
 Nothing yet.
 
-## [0.1.3] - 2026-08-21
+## [0.1.4] - 2026-08-21
 
 ### Added
 
