@@ -12,6 +12,44 @@ repository is private and its commit subjects are not published.
 
 Nothing yet.
 
+## [0.1.5] - 2026-08-21
+
+### Added
+
+- **A macOS app you open by double-clicking it.** Download
+  `continuation-drafter-macos.dmg`, drag **Continuation Drafter** to Applications, and
+  double-click it: the drafting interface opens in your browser. No Terminal, no
+  permissions to change, and one download that runs on both Apple silicon and Intel.
+
+  This exists because the previous release could not be opened that way and never could
+  have. A binary downloaded through a browser arrives without an execute bit, and a bare
+  file has no bundle, so double-clicking it opened a text editor showing the program's
+  raw bytes. Signing fixed a different problem (macOS killing the file silently) and left
+  this one untouched.
+
+  The app is signed with a Developer ID certificate, notarized by Apple and **stapled**,
+  so first launch needs no network check. macOS still asks once whether you are sure you
+  want to open something downloaded from the internet; the button is **Open**.
+
+  It has no Dock icon, because it runs no window of its own. Press **Stop** in the
+  browser tab to shut it down.
+
+- **A Stop control in the web interface.** The only way to end a session started from the
+  app: there is no terminal to interrupt and no Dock icon to quit.
+
+### Changed
+
+- **The command-line binaries are unchanged and still published.** They remain the right
+  download for a terminal, a script or CI, and the install steps for them are the same.
+- **`CD_PORT` now applies to a bare invocation**, not only to `serve`. It set the port for
+  one of the two ways of starting the interface and silently did nothing for the other.
+
+### Fixed
+
+- **Starting the interface twice no longer fails to bind.** A second double-click, or a
+  second `continuation-drafter` in another terminal, now opens the browser at the session
+  already running instead of reporting that the port is in use.
+
 ## [0.1.4] - 2026-08-21
 
 ### Added

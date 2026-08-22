@@ -100,6 +100,23 @@ machine" guarantee belongs to the local path only.
 
 ## Run it
 
+### On a Mac, without a terminal
+
+Download **`continuation-drafter-macos.dmg`** from the
+[latest release](https://github.com/Obviously-Not/patent-continuation-public/releases/latest),
+open it, drag **Continuation Drafter** to Applications, and double-click it. The drafting
+interface opens in your browser. macOS 11 or later; one download runs on Apple silicon and
+Intel.
+
+macOS asks once whether you are sure you want to open something downloaded from the
+internet. The button is **Open**: the app is signed with a Developer ID certificate and
+notarized by Apple, with the ticket stapled, so no network check is needed at first launch.
+
+It has no Dock icon, because it runs no window of its own; the interface is the browser tab
+it opens. Press **Stop** in that tab to shut it down.
+
+### From the command line
+
 Get the binary once, then run it from wherever your files are (paths resolve
 from your current directory).
 
@@ -112,11 +129,16 @@ chmod +x continuation-drafter-darwin-arm64
 mv continuation-drafter-darwin-arm64 continuation-drafter
 ```
 
-The macOS builds are signed with a Developer ID certificate and notarized by Apple as
+The macOS binaries are signed with a Developer ID certificate and notarized by Apple as
 of v0.1.4, so there is nothing else to do: no Gatekeeper dialog, and no quarantine
 attribute to clear. Releases up to and including v0.1.3 were unsigned and needed
 `xattr -d com.apple.quarantine`; that step is no longer required and should not be
 copied from an older page.
+
+A **downloaded** bare binary cannot be opened by double-clicking it, whatever its
+signature: an HTTP download carries no execute bit and a bare file has no bundle, so the
+Finder hands it to a text editor. That is what the `.dmg` above is for, and it is the
+right download for anyone who was not going to use a terminal anyway.
 
 What establishes that the file is the one published is its SHA-256, listed in
 `checksums.txt` with each release.
