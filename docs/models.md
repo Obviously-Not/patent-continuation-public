@@ -225,6 +225,53 @@ export OPENROUTER_API_KEY=...
 continuation-drafter draft --spec s.txt --parent p.txt --model anthropic/claude-opus-4-8
 ```
 
+**Since 2026-08-25 there are three cloud providers, and `--provider` chooses between them.**
+The rewrite above is OpenRouter's own addressing scheme, so it applies to OpenRouter alone:
+name Anthropic or OpenAI directly and the model goes as you wrote it.
+
+| Provider | `--provider` | Key | Endpoint override |
+|---|---|---|---|
+| OpenRouter | `openrouter` | `OPENROUTER_API_KEY` | `OPENROUTER_BASE_URL` |
+| OpenAI | `openai` | `OPENAI_API_KEY` | `CD_OPENAI_BASE_URL` |
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` | `CD_ANTHROPIC_BASE_URL` |
+
+```bash
+export ANTHROPIC_API_KEY=...
+continuation-drafter draft --spec s.txt --parent p.txt \
+  --provider anthropic --model claude-opus-4-8
+```
+
+### What the picker lists, and what it leaves out
+
+The model picker curates each provider's catalog rather than showing it whole. Three of the
+rules are about capability and one is an editorial choice, which is stated because they are
+not the same kind of decision:
+
+| Rule | Why |
+|---|---|
+| Text output only | read from the provider's own capability field, not guessed from the name |
+| No purpose-built variants | `codex`, `-search`, `deep-research` and `instruct` builds take a prompt but are specialised away from drafting |
+| No suffixed variants | `:free`, `:batch`, `preview` and `-exp` are the same model under different billing or stability terms |
+| Nothing older than about 18 months | keeps the current and previous generation; the rest are not serious candidates |
+| **Major labs only, on OpenRouter** | **an editorial choice, not a measurement.** See below |
+
+**"Most used" is not something this tool can know.** OpenRouter's API publishes no usage or
+ranking data: `/models` returns the same entries in the same order whether or not an
+`order=top-weekly` parameter is supplied, and there is no rankings endpoint. So its catalog is
+narrowed by a list of frontier labs, which is a judgement about which models a practitioner
+would draft with, not a popularity ranking. It will go out of date as labs come and go.
+
+**Nothing is unreachable because of any of this.** With an empty search box the picker renders
+the fifty most recent and says how many more there are; typing filters the whole curated set;
+and every provider pane has a box to name a model directly, which reaches past the catalog
+entirely. That last one matters for Anthropic, whose OpenAI-compatible endpoint serves chat but
+answers `/v1/models` with 401, so its catalog is fetched over the native API instead.
+
+The flag is needed because the model string cannot express the choice: `anthropic/claude-opus-4-8`
+is OpenRouter's slug for that model, so the same string would name two different destinations.
+**With no `--provider` the string still decides, exactly as described above**, which is what
+keeps every command in this document working unchanged.
+
 **Ambiguous bare names default to local, by design.** Families that exist BOTH as
 local Ollama models and as remote models (`llama`, `qwen`, `deepseek`, `mistral`)
 are deliberately NOT auto-routed: a bare `deepseek-chat` is treated as a local

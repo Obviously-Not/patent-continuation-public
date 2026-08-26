@@ -44,15 +44,16 @@ Without a paid licence the binary makes no such call at all.
 
 You need the binary (download it from the latest release, or see below to build
 it), and **at least one inference backend**:
-local **Ollama** (private: your specification never leaves your machine) or a remote **OpenRouter**
-key (faster and stronger, but the spec is sent to a third party). You can set up
-both and choose per run with `--model`. Your OpenRouter key is read from the
-environment first, and otherwise from `~/.continuation-drafter/config.json`, a
-file the binary creates mode 0600 (owner read/write only). It is never read from
-a command-line flag, never written to a log, and never stored in this repository.
-The web UI can save a key into that file for you; the CLI does not, so if you use
-the CLI only, `export OPENROUTER_API_KEY` in your shell. The binary does not read
-a `.env` file.
+local **Ollama** (private: your specification never leaves your machine) or a key for one of
+three cloud providers, **OpenRouter**, **OpenAI** or **Anthropic** (faster and stronger, but
+the spec is sent to a third party). You can set up several and choose per run with
+`--provider` and `--model`.
+
+Each provider's key is read from the environment first, and otherwise from
+`~/.continuation-drafter/config.json`, a file the binary creates mode 0600 (owner read/write
+only). Keys are never read from a command-line flag, never written to a log, and never stored
+in this repository. The web UI can save a key into that file for you; the CLI does not, so if
+you use the CLI only, export the key in your shell. The binary does not read a `.env` file.
 
 ### Option A: local models with Ollama (private)
 
@@ -82,16 +83,41 @@ a `.env` file.
 4. **Verify:** `ollama list` shows the model you pulled; `./continuation-drafter
    models` shows the configuration the tool resolved.
 
-### Option B: remote models with OpenRouter (faster, stronger)
+### Option B: cloud models (faster, stronger)
 
-1. **Create an API key** at https://openrouter.ai/keys and add credit. A single
-   draft makes several model calls, so check your balance at
-   https://openrouter.ai/credits before a big run.
-2. **Export it:** `export OPENROUTER_API_KEY=sk-or-...`
-3. **Select a remote model** with the slash-slug form: `openai/gpt-5.5`,
-   `anthropic/claude-opus-4-8`, `moonshotai/kimi-k2.5`, or any OpenRouter slug.
-   Override the endpoint (rare) with `OPENROUTER_BASE_URL`; it defaults to
-   `https://openrouter.ai/api/v1`.
+Three providers, each with its own key. A single draft makes several model calls, so check
+your balance before a big run.
+
+| Provider | `--provider` | Key | Endpoint override |
+|---|---|---|---|
+| OpenRouter | `openrouter` | `OPENROUTER_API_KEY` | `OPENROUTER_BASE_URL` |
+| OpenAI | `openai` | `OPENAI_API_KEY` | `CD_OPENAI_BASE_URL` |
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` | `CD_ANTHROPIC_BASE_URL` |
+
+1. **Create a key** with your chosen provider and export it.
+2. **Name the provider and the model:**
+   `--provider anthropic --model claude-opus-4-8`, or
+   `--provider openrouter --model anthropic/claude-opus-4-8`.
+
+**With no `--provider`, the model string still chooses**, exactly as it did before: a
+colon tag such as `qwen3:32b` runs on this machine, and a slash slug or a bare vendor prefix
+goes to OpenRouter. Every command documented for earlier versions keeps working unchanged.
+
+Whichever you choose, the tool prints a one-line note naming the provider and the endpoint
+before your specification leaves the machine.
+
+In the web interface each provider is a tab in the model picker, showing its models when its
+key is set and a key box when it is not. The lists are curated: text models only, no
+purpose-built or billing variants, nothing much older than the previous generation, and on
+OpenRouter only the frontier labs. That last one is an editorial judgement rather than a
+popularity ranking, because no usage data is published. With an empty search box you see the
+fifty most recent and a count of how many more there are; searching reaches the whole curated
+list, and every pane has a box to name a model directly if the catalog does not list it.
+
+`CD_OPENAI_BASE_URL` is namespaced and the OpenRouter one is not, which looks inconsistent and
+is deliberate: `OPENAI_BASE_URL` already redirects the **local Ollama** endpoint in this
+binary, and giving one variable two meanings, one of which quietly moves a privileged
+specification, is not a trade worth making.
 
 **Confidentiality:** a remote model sends the specification to a third party.
 That is fine for published patents and **not** for anything unpublished or
@@ -161,10 +187,10 @@ DRAFT_MODEL=qwen3:32b ./continuation-drafter draft \
   --spec ../fixtures/micro/micro_spec.txt \
   --parent ../fixtures/micro/micro_parent_claims.txt
 
-# Remote model via OpenRouter (spec leaves your machine; published material only)
-OPENROUTER_API_KEY=... ./continuation-drafter draft \
+# Cloud model (spec leaves your machine; published material only)
+ANTHROPIC_API_KEY=... ./continuation-drafter draft --provider anthropic \
   --spec spec.txt --parent parent.txt \
-  --model openai/gpt-5.5 --revise-loops 2
+  --model claude-opus-4-8 --revise-loops 2
 ```
 
 **Critique** an existing draft on its own (per-claim 112(a)/112(b) defects with
@@ -216,15 +242,42 @@ The binary includes a local web UI. Start it with `serve`:
 ./continuation-drafter serve --port 8080 --no-browser
 ```
 
-The web UI provides full CLI parity with a graphical interface:
-- **Draft tab**: Generate continuation claims with real-time SSE progress
-- **Critique tab**: Analyze existing claims for 112(a)/112(b) defects with suggested fixes
-- **Judge tab**: Score claims with spec-anchor validation (T1/T4 semantics)
-- **Panel tab**: Compare multiple drafts with multi-model scoring
-- File drag-drop or paste for spec, parent claims, and existing drafts
-- Model selection (from configured models)
-- Light/dark theme (follows system preference)
-- License key activation modal
+The interface has two tabs.
+
+**Draft** takes a whole patent application, specification and existing claims in one
+document, and runs the drafting pipeline over it with progress streaming as it goes.
+
+**Discuss** is a conversation over the same document. You attach the application once, then
+ask in your own words, and the tool selects one of its passes and runs it:
+
+| You ask about | It runs |
+|---|---|
+| what the specification discloses that the claims do not reach | Find what the parent left unclaimed |
+| how to broaden what you already claim | Find broader scope in what you already claim |
+| another application around the same claim center, framed differently | Keep this claim center and recast it |
+| drafting claims to the directions you have chosen | Draft continuation claims |
+| whether a claim set is correct | Find defects in a claim set, or Review drafting craft |
+| whether a limitation is narrowing you for nothing | Find scope you are giving away |
+| rewriting a set | Fix flagged defects, or Polish a clean set |
+
+The broadening pass works through six moves against your existing claims: who performs the
+reciprocal or downstream operation, which limitations are one implementation rather than the
+invention, whether a per-element step can be an aggregate, whether the artifact the process
+produces can be claimed instead, which phase of the system's life is unclaimed, and which other
+disclosed product could perform the same role.
+
+The continuation directions it finds are listed beside the conversation, each labelled with
+whether its supporting quote was located verbatim in your specification, and each removable if
+you disagree with it. Directions you keep are what the drafting pass writes claims to, so the
+set of claims you get is the set you chose.
+
+Both tabs share the rest: drag-drop or paste, model selection from what this machine can
+actually reach, light and dark themes following your system preference, and licence-key
+activation.
+
+**What the tool never does** is tell you whether anything is patentable, novel, non-obvious or
+eligible. It drafts claim language and reports on drafting quality against the specification
+you supply. Every output is for a licensed practitioner to check and decide on.
 
 The server binds to `127.0.0.1` only (localhost, not network-accessible). Your inputs
 (spec, parent claims, drafts) stay on your machine; the only place they are sent is the
