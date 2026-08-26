@@ -10,6 +10,69 @@ repository is private and its commit subjects are not published.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-26
+
+### Added
+
+- **Claims are laid out one element per line.** A claim sets out its elements separated by
+  semicolons, and the page was showing all of them as a single paragraph: one claim measured
+  3,284 characters as an unbroken block. Each element now begins its own line, indented, which
+  is the form the rules prescribe for a filed claim and the form a practitioner reads. The
+  wording is untouched; only the whitespace differs. Word, PDF and the plain-text export carry
+  the same layout, and so does Copy.
+
+- **You can check claims without rewriting them.** The only thing you could do with a drafted
+  set was ask a model to revise it, which changes your claims. There is now a check that
+  reports what is wrong and alters nothing, offered first on claims nothing has reviewed and
+  alongside revising when findings exist.
+
+- **A list of your claims, beside them.** Each row shows the claim number, whether it is
+  independent or which claim it depends on, what distinguishes it, and how many findings it
+  carries. Clicking one jumps to it.
+
+- **Answers in the Discuss tab are formatted.** Headings, lists, bold and quoted terms used to
+  arrive as their own punctuation.
+
+### Changed
+
+- **A revision shows only the elements that changed.** A rewrite touching two elements of ten
+  was rendered as the entire claim in red and green; the untouched elements now sit quietly
+  and the changed ones stand out.
+
+- **Claims and answers use more of the window.** Both were held to the width of a paragraph of
+  prose, which suits an essay and not a claim.
+
+- **The page says what to do next in every state**, including when a claim set has been drafted
+  but not reviewed, and it always offers a way to open the conversation about it.
+
+### Fixed
+
+- **A drafting run's work reaches the matter it belongs to.** Claims, findings, craft flags and
+  continuation targets were computed and then written nowhere, so the Discuss tab could see
+  none of it and the monthly counter could not tell a re-run from a new matter.
+
+- **A file dropped onto the page is saved.** Choosing one with the file picker saved it;
+  dropping the identical file did not, which was invisible until the Discuss tab reported
+  having no application.
+
+- **A review that fails says so.** When the critique pass could not complete, the page showed
+  no findings and no explanation, and reopening the matter then reported the claims as
+  reviewed and clean. Whether the check actually ran is now recorded and shown.
+
+- **A malformed reply from the model is asked again.** Roughly one review in eight came back
+  with a stray character that made it unreadable, and the whole review was discarded for it.
+  The retry also varies its sampling, since repeating an identical request produces an
+  identical answer.
+
+- **Errors say what happened and keep the evidence.** A failed review reported only a byte
+  count. It now distinguishes a reply that ran out of room from one that was never valid, and
+  quotes what came back.
+
+- **A reference to a section of your specification is no longer mistaken for a citation of
+  law**, and a reference to the parent's claims is no longer reported as invented.
+
+- **Asking how to improve a claim gets claim language**, not a refusal about filing strategy.
+
 ## [0.2.0] - 2026-08-25
 
 ### Added
