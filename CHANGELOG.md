@@ -10,6 +10,32 @@ repository is private and its commit subjects are not published.
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-08-28
+
+### Changed
+
+- **The Windows binary is signed.** Windows Defender and SmartScreen blocked the previous
+  download, because the `.exe` carried no signature at all: the macOS builds were signed and
+  notarized and Windows had nothing. Releases are now signed with an Azure Artifact Signing
+  certificate issued to Geeks in the Woods, which is the name Windows shows as the verified
+  publisher. The signature is timestamped, so it keeps verifying after the signing
+  certificate itself expires.
+
+  The release refuses to publish an unsigned Windows binary rather than shipping one quietly.
+  It asks Windows itself whether the signature verifies, and requires both a valid status and
+  a timestamp before the release leaves draft. A signing step that silently matched nothing
+  is how an unsigned macOS binary shipped in v0.1.3.
+
+- **`checksums.txt` changes for the Windows entry.** Signing rewrites the file, so its hash is
+  not the one an unsigned build would produce. Verify a download against the checksums
+  published with the same release, never against an earlier one.
+
+### Notes
+
+- **Nothing about drafting changed in this release.** The pipeline, the models, the skills and
+  the local web UI are identical to 0.2.1. If Windows was not blocking your download, there is
+  nothing here you need.
+
 ## [0.2.1] - 2026-08-26
 
 ### Added
@@ -559,8 +585,9 @@ rather than boilerplate. Read them before using output for anything real.
   a legal determination.
 - **License tiers are reported, not enforced.** Verification and reporting are
   implemented; feature gating is deferred by owner decision, so all capabilities
-  are available regardless of tier. Release builds also carry no embedded public
-  key yet, which is a build-time gap rather than a policy change.
+  are available regardless of tier. Release builds DO carry the licence public
+  key, since v0.1.1 on 2026-08-18, so the deferral is a policy choice and no longer
+  also a build-time gap.
 - **No coverage metric.** The embedding-based coverage map from the originating
   experiment was not ported. This is a named, accepted gap.
 - Model choice matters more than usual, because a specification must fit inside
