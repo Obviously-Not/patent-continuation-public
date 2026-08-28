@@ -10,7 +10,7 @@ repository is private and its commit subjects are not published.
 
 ## [Unreleased]
 
-## [0.2.2] - 2026-08-28
+## [0.2.3] - 2026-08-28
 
 ### Changed
 
@@ -31,6 +31,11 @@ repository is private and its commit subjects are not published.
   published with the same release, never against an earlier one.
 
 ### Notes
+
+- **0.2.2 was tagged and published nothing.** Its Windows signing step failed on a path bug,
+  and the pipeline did what it is built to do: the release stayed a draft rather than
+  publishing a binary that was unsigned or whose checksum did not describe it. There is no
+  0.2.2 download and there never was one.
 
 - **Nothing about drafting changed in this release.** The pipeline, the models, the skills and
   the local web UI are identical to 0.2.1. If Windows was not blocking your download, there is
