@@ -161,6 +161,16 @@ attribute to clear. Releases up to and including v0.1.3 were unsigned and needed
 `xattr -d com.apple.quarantine`; that step is no longer required and should not be
 copied from an older page.
 
+The Windows binary is signed as of v0.2.3, by Geeks in the Woods, which is the name
+Windows shows as the verified publisher. Releases before that were unsigned and Windows
+Defender blocked them. Expect a warning on a new release anyway: Windows says a file
+isn't commonly downloaded until enough people have taken it, and preselects Delete. The
+Publisher line in that dialog is the check, and it is populated only when the signature
+validates. SmartScreen scores a new certificate on
+download reputation rather than on the signature alone, so a prompt is still possible; the
+publisher line on it is what distinguishes this build, and the SHA-256 below is what
+proves it.
+
 A **downloaded** bare binary cannot be opened by double-clicking it, whatever its
 signature: an HTTP download carries no execute bit and a bare file has no bundle, so the
 Finder hands it to a text editor. That is what the `.dmg` above is for, and it is the

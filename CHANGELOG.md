@@ -10,6 +10,33 @@ repository is private and its commit subjects are not published.
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-08-29
+
+### Added
+
+- **A bill of materials with every download.** Each binary now ships an SBOM listing every
+  library inside it, with versions, in the standard SPDX format. It detects nothing by
+  itself; it is what lets you answer "does the build I am running contain this" months
+  from now, when an advisory lands against a library, without rebuilding anything. The
+  documents are covered by `checksums.txt` like every other file.
+
+### Changed
+
+- **The download page now leads with your own operating system.** The button, the
+  instructions, the command examples and the order of the binary list all follow the
+  machine you are reading on. A Windows visitor was previously offered a macOS `.dmg` as
+  the only button on the page, with commands underneath that their shell could not run.
+
+- **A page explaining what is checked, and how you can check it.** Where your
+  specification goes, who signed the download, the published SHA-256, and the
+  vulnerability scan that gates a release. All of it was already true and all of it was
+  buried inside the install steps.
+
+### Notes
+
+- **Nothing about drafting changed.** The pipeline, the models, the skills and the local
+  web UI are identical to 0.2.3.
+
 ## [0.2.3] - 2026-08-28
 
 ### Changed

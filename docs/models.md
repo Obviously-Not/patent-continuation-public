@@ -171,8 +171,61 @@ drafted it fine at `--max-tokens 8000`, which raises the usable spec ceiling by
 roughly 8,000 tokens. They had missed by a few hundred. Before concluding a
 specification is too large for a model, halve the completion budget and retry.
 
+> **THIS DOES NOT APPLY TO A THINKING MODEL, AND FOLLOWING IT THERE MAKES THINGS
+> WORSE. Corrected 2026-08-29.** The measurements above came from 127 drafts that
+> contained no forced-reasoning models, so they are true of that sample and do not
+> generalize. Reasoning tokens are billed against the SAME budget as the answer, so
+> a model that deliberates until the budget is gone returns an empty completion
+> with `finish_reason: length`. Measured on `z-ai/glm-5.3` against a 49 KB
+> specification: **13,604 reasoning tokens and zero characters of output** at the
+> 16,000 default. Halving to 8,000 truncates it sooner and still yields nothing.
+>
+> **Raising the budget does not fix it either**, which is the counter-intuitive
+> part: at 40,000 the same call spent 41,944 tokens reasoning and still returned
+> nothing, because the model reasons to fill whatever it is given.
+>
+> **The fix is `--reasoning-effort`, not `--max-tokens`.** See the next section.
+
 This does not rescue a model whose window is genuinely too small. A 131k-token
 window cannot hold a 165k-token specification at any output budget.
+
+## If a model returns nothing after a long wait, it is a thinking model
+
+Added 2026-08-29, from the batch C run.
+
+Some models deliberate before they answer, and that deliberation is billed against the
+completion budget. Given a budget they can exhaust, they will: they reason until it is
+gone and return an empty result. The symptom is distinctive and easy to misread as the
+model being slow or the tool being broken:
+
+- a long wait, then nothing, with no error that names a cause
+- more `--max-tokens` makes it slower and no more likely to succeed
+
+**Set `--reasoning-effort`.** `low`, `medium` or `high`; unset keeps the provider's own
+default, which for some models is effectively unbounded.
+
+```
+continuation-drafter draft --spec spec.txt --parent claims.txt \
+  --model z-ai/glm-5.3 --reasoning-effort high
+```
+
+Measured on `z-ai/glm-5.3`, same 49 KB specification, same 16,000-token budget:
+
+| | result |
+|---|---|
+| provider default | 13,604 reasoning tokens, **0 characters**, no draft |
+| `--reasoning-effort high` | a complete 16-claim draft in 13 seconds |
+
+**`high` is the right starting point.** It is the least restrictive setting that still
+guarantees the model emits an answer, and it costs nothing in quality: measured across
+ten specifications in one panel, `gpt-5.5` scored 88.8 at `high` against 88.6 at its
+default, and `glm-5.2` 85.5 against 84.4. Both differences are inside this benchmark's
+~3-point floor. **Reasoning effort rescues models that would otherwise produce nothing;
+it does not make a working model draft better.**
+
+Models measured to need it: `glm-5.3`, `glm-5.3-flash`, `kimi-k3`, `kimi-k2.6`,
+`nemotron-3-super`, and the `qwen3.8` family. Models that were unaffected either way:
+`gpt-5.5`, `glm-5.2`, `llama-4-maverick`, `deepseek-v4-flash`.
 
 ## What the screen actually established
 
