@@ -10,6 +10,54 @@ repository is private and its commit subjects are not published.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-18
+
+### Added
+
+- **The parent's prosecution history, from Patent Center.** Attach the "download all
+  documents" PDF to a matter and the tool reads its bookmarks to find the papers a
+  continuation decision turns on: the Office Actions, the responses with their claim
+  listings and remarks, the Notice of Allowance, and the references of record. Every page
+  of such a file is an image; the pages are read from a text layer if you have run
+  recognise-text over the file, or by tesseract if it is installed on your machine, with
+  each page passed on standard input and nothing written to disk. A paper that cannot be
+  read says why. Nothing is sent anywhere.
+- **Where each limitation of the parent's claims entered the record.** With the parent's
+  claims as allowed or issued in the matter, the Prosecution record panel shows, for every
+  limitation, whether it was in the claims as filed or added in a response, which Office
+  Action that response answered, and whether the allowance followed. These are facts about
+  dated papers. What they mean for a continuation is your reading.
+- **"What the examiner said."** A Discuss skill that reads an Office Action or Notice of
+  Allowance and reports which claims were rejected, on what ground, over which references,
+  and what the reasons for allowance credited, each with a quotation checked against the
+  paper. It reports the record and never whether the examiner was right or whether an
+  amendment was needed; a model's attempt to say so is withheld and shown as withheld.
+
+### Fixed
+
+- PDF pages are read in the order the document's page tree gives them, not by object
+  number. The two orders had coincided on every file tried, so this had never shown.
+- An upload larger than the limit is refused with a message that says so. It was cut at
+  the limit with no error and then refused for the wrong reason.
+- PDF streams whose `stream` keyword is followed by a bare carriage return, image
+  dictionaries whose filter is a name, and dictionary keys that are prefixes of their
+  neighbours (`/Decode` inside `/DecodeParms`) are all read correctly. Each of these was
+  found on a real Patent Center file.
+- LZW-compressed PDF streams decode with the early-change variant PDF uses by default.
+- **A long specification on the recommended local model finishes.** Each call to a local
+  model had a ten-minute deadline, and the 32 GB tier's recommended model was measured at
+  up to twelve minutes for one draft, so a practitioner following that recommendation on
+  a long specification saw "after 2 attempts, each timing out" and was told to pick a
+  smaller model. The per-call deadline is now twenty minutes, the error names the
+  variable that raises it (`CD_REQUEST_TIMEOUT_SECONDS`) instead of the run's `--timeout`,
+  and the recovery steps for a call that timed out lead with that variable before they
+  suggest a shorter specification or a faster model. Reported by a practitioner on a 64 GB
+  machine.
+- A specification that does not fit the model's context window is answered with the right
+  recovery steps: choose a larger-context model, or lower the output cap to raise the input
+  ceiling. It was answered with the truncation advice, which told the reader to raise the
+  output cap and so made the refusal more likely.
+
 ## [0.2.4] - 2026-08-29
 
 ### Added

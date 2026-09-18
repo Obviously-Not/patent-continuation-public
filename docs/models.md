@@ -137,12 +137,29 @@ available locally, these drafted all ten specifications including the 645 KB one
 
 | model | drafted | resident memory | note |
 |---|---|---|---|
-| `gemma4:26b` | 10/10 | **20 GB, flat** | A4B mixture-of-experts |
+| `qwen3.8:27b` | 8/9 tried | **20 GB, flat** | 20.3 GB peak measured; best drafting at this size |
+| `gemma4:26b` | 10/10 | **20 GB, flat** | A4B mixture-of-experts; the only one that finished all ten |
 | `gemma4:31b` | 9/10 | **30 GB, flat** | fails only the 645 KB spec |
 | `qwen3-coder:30b` | 10/10 | 44 GB at 65k, **122 GB at 262k** | grows steeply with context |
 | `gemma4:12b` | 9/10 | 12 GB, flat | uneven quality across specs |
 | `devstral-small-2:24b` | 7/10 | 20 GB to **187 GB** | steep growth |
 | `deepseek-r1:70b` | 6/10 | 111 GB at 65k | returns prose, not JSON, on several |
+
+**`qwen3.8:27b` is the 32 GB recommendation as of 2026-08-29, and it is a trade.**
+Measured locally at Q4_K_M: peak resident **20.3 GB**, range 20.1 to 20.3 across 252
+samples taken during a draft, so the KV cache is flat. It finished 8 of the 9
+specifications tried, up to about 145 pages, in 2 to 12 minutes each. It **could not
+finish the longest, about 240 pages**, timing out at 30 minutes with nothing produced.
+
+Against the model it replaces it is far stronger: a six-specification panel scored the
+local drafts 2.5 points behind the cloud copy of the same weights, which places it near
+85 on the published scale against `gemma4:26b`'s 66.5, at the same memory. **If your
+specification runs past about 150 pages, use `gemma4:26b`**, which is slower to nothing
+and weaker on quality but finished every specification tested.
+
+It is NOT placed above `gemma4:31b`: 85.5 against 81.3 is 4.2 points measured in
+different batches, and a cross-batch difference under about four points is not a
+ranking here.
 
 **Model file size does not predict memory in use.** `qwen3-coder:30b` is an 18 GB
 download that occupies 122 GB once given a context window large enough for the
@@ -226,6 +243,21 @@ it does not make a working model draft better.**
 Models measured to need it: `glm-5.3`, `glm-5.3-flash`, `kimi-k3`, `kimi-k2.6`,
 `nemotron-3-super`, and the `qwen3.8` family. Models that were unaffected either way:
 `gpt-5.5`, `glm-5.2`, `llama-4-maverick`, `deepseek-v4-flash`.
+
+**One model refuses the parameter, and the failure looks like a provider outage.** Added
+2026-09-12, from the batch D run. `mistralai/mistral-medium-3-5` answers any request carrying
+`reasoning_effort` with `400 Bad Request, message: Provider returned error`, on a 3.7 KB
+specification as readily as on a 645 KB one, and drafts normally the moment the flag is
+removed. If a Mistral model returns a bad-request error, remove `--reasoning-effort` before
+suspecting anything else. It was measured at its default for that reason, and every other
+batch D model at `high`.
+
+**A context refusal is not a truncation.** A model with a 128k window (`meta/muse-glimmer-30b`
+is the measured case) refuses the two largest specifications in the corpus before any call is
+made, with an error naming the ceiling. The remedy is a larger-context model or a smaller
+`--max-tokens`, because the input ceiling is the window minus the output budget; raising
+`--max-tokens` makes the refusal more likely. Until 2026-09-12 the recovery steps printed for
+that error said the opposite.
 
 ## What the screen actually established
 

@@ -14,6 +14,9 @@
 >
 > Intended audience: **licensed patent attorneys and agents** who run it as a
 > drafting aid under their own professional judgment.
+>
+> Website, with the measured model comparison and the continuation-practice
+> reference corpus: [patentcontinuation.com](https://patentcontinuation.com).
 
 ## What it is
 
@@ -341,9 +344,11 @@ key verifies and reports a tier without changing what the tool will do.
   critic on a small local default, the critic can choke on a big spec. Point the
   critic at a model that also fits the spec.
 - `--max-tokens` / `MAX_COMPLETION_TOKENS` (default 16000) is the per-call
-  completion cap. `--timeout` (default 30m for `draft`) and
-  `CD_REQUEST_TIMEOUT_SECONDS` (per-request) bound long runs; large specs on slow
-  models need both raised.
+  completion cap. Two deadlines bound a run: `--timeout` (default 30m for `draft`)
+  is the whole run's, and `CD_REQUEST_TIMEOUT_SECONDS` (default 1200, twenty
+  minutes) is each model call's, which is the one a long specification on a large
+  local model hits first. A run that fails "after 2 attempts, each timing out"
+  needs the second raised, not the first.
 - Keys come from the environment first, then from `~/.continuation-drafter/config.json`
   (mode 0600), never from a flag and never from a log. The binary reads exactly
   one key, `OPENROUTER_API_KEY`; all remote inference goes through OpenRouter, so
